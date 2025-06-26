@@ -1,6 +1,6 @@
 # IM
 
-技术栈：Spring Boot、Spring Data JPA、Netty、MySQL
+技术栈：Spring Boot、Spring Data JPA、Netty、MySQL、MinIO
 
 已实现功能：
 
@@ -22,3 +22,37 @@
 
 - 自定义群聊（更多是业务功能，一个公共群聊足够学习相关技术了）
 - 音视频通话（不从事相关行业，没有太大用处）
+
+
+
+启动 Windows 下安装的 MinIO
+
+```bash
+.\minio.exe server .\storage --console-address :9001
+```
+
+内网穿透配置
+
+```bash
+# 配置文件
+C:\Users\{Windows用户名}\AppData\Local\ngrok\ngrok.yml
+```
+
+```yml
+version: "2"
+authtoken: {自己的token}
+tunnels:
+    http:
+        proto: http
+        addr: 8090
+    websocket:
+        proto: http
+        addr: 8080
+```
+
+启动内网穿透
+
+```bash
+ngrok.exe start --all
+```
+
