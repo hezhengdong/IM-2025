@@ -67,16 +67,41 @@
             <div class="chat-area">
                 <div class="chat-header" id="chatHeader">
                     <h3 id="currentRoomName">请选择一个房间开始聊天</h3>
+                    <button id="fileToggleBtn" class="file-toggle-btn" style="display: none;">文件</button>
                 </div>
-                <div class="chat-messages" id="chatMessages">
-                    <div class="welcome-message">
-                        <p>欢迎使用IM聊天系统</p>
-                        <p>请从左侧选择一个房间开始聊天</p>
+                <div class="chat-content">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="welcome-message">
+                            <p>欢迎使用IM聊天系统</p>
+                            <p>请从左侧选择一个房间开始聊天</p>
+                        </div>
+                    </div>
+                    <!-- 文件面板 -->
+                    <div class="file-panel" id="filePanel" style="display: none;">
+                        <div class="file-panel-header">
+                            <h4>房间文件</h4>
+                            <button id="closeFilePanel" class="close-file-panel">×</button>
+                        </div>
+                        <div class="file-list" id="fileList">
+                            <div class="file-loading">加载中...</div>
+                        </div>
                     </div>
                 </div>
                 <div class="chat-input" id="chatInput" style="display: none;">
+                    <!-- 文件上传进度条 -->
+                    <div class="upload-progress" id="uploadProgress" style="display: none;">
+                        <div class="progress-info">
+                            <span class="progress-filename" id="progressFilename">上传文件中...</span>
+                            <span class="progress-percentage" id="progressPercentage">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-bar-fill" id="progressBarFill"></div>
+                        </div>
+                    </div>
                     <div class="input-container">
                         <input type="text" id="messageInput" placeholder="输入消息..." maxlength="500">
+                        <input type="file" id="fileInput" style="display: none;" multiple>
+                        <button id="uploadBtn" class="btn-upload">📎</button>
                         <button id="sendBtn" class="btn-send">发送</button>
                     </div>
                 </div>

@@ -68,13 +68,12 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
-        <!-- 工具类(目前只用来生成唯一ID) -->
+        <!-- Minio -->
         <dependency>
-            <groupId>cn.hutool</groupId>
-            <artifactId>hutool-all</artifactId>
-            <version>5.8.38</version>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>7.1.0</version>
         </dependency>
-
     </dependencies>
 
     <build>

@@ -2,6 +2,7 @@
 let currentRoomId = null;
 let rooms = [];
 let roomRefreshTimer = null; // 房间列表刷新定时器
+let isFilePanelOpen = false; // 文件面板状态
 
 // 页面初始化
 document.addEventListener('DOMContentLoaded', function() {
@@ -55,6 +56,14 @@ function bindEvents() {
             sendMessage();
         }
     });
+    
+    // 文件功能
+    document.getElementById('fileToggleBtn').addEventListener('click', toggleFilePanel);
+    document.getElementById('closeFilePanel').addEventListener('click', closeFilePanel);
+    document.getElementById('uploadBtn').addEventListener('click', () => {
+        document.getElementById('fileInput').click();
+    });
+    document.getElementById('fileInput').addEventListener('change', handleFileUpload);
     
     // 退出登录
     document.getElementById('logoutBtn').addEventListener('click', logout);
@@ -208,6 +217,7 @@ async function selectRoom(roomId, roomName) {
     
     document.getElementById('currentRoomName').textContent = roomName;
     document.getElementById('chatInput').style.display = 'block';
+    document.getElementById('fileToggleBtn').style.display = 'block';
     
     // 清空聊天区域
     const chatMessages = document.getElementById('chatMessages');
@@ -215,6 +225,9 @@ async function selectRoom(roomId, roomName) {
     
     currentRoomId = roomId;
     wsManager.setCurrentRoom(roomId);
+    
+    // 关闭文件面板
+    closeFilePanel();
     
     // 加载历史消息
     await loadMessages(roomId);
@@ -325,7 +338,7 @@ function startRoomRefresh() {
     // 设置每1秒刷新一次房间列表
     roomRefreshTimer = setInterval(() => {
         loadRooms();
-    }, 1000);
+    }, 10000);
 }
 
 // 停止房间列表自动刷新
@@ -336,6 +349,223 @@ function stopRoomRefresh() {
     }
 }
 
+// 文件面板切换
+function toggleFilePanel() {
+    if (isFilePanelOpen) {
+        closeFilePanel();
+    } else {
+        openFilePanel();
+    }
+}
+
+// 打开文件面板
+async function openFilePanel() {
+    if (!currentRoomId) {
+        showToast('请先选择房间', 'error');
+        return;
+    }
+    
+    isFilePanelOpen = true;
+    const filePanel = document.getElementById('filePanel');
+    const chatMessages = document.getElementById('chatMessages');
+    
+    filePanel.style.display = 'flex';
+    chatMessages.classList.add('with-file-panel');
+    
+    // 加载文件列表
+    await loadFileList();
+}
+
+// 关闭文件面板
+function closeFilePanel() {
+    isFilePanelOpen = false;
+    const filePanel = document.getElementById('filePanel');
+    const chatMessages = document.getElementById('chatMessages');
+    
+    filePanel.style.display = 'none';
+    chatMessages.classList.remove('with-file-panel');
+}
+
+// 加载文件列表
+async function loadFileList() {
+    const fileList = document.getElementById('fileList');
+    fileList.innerHTML = '<div class="file-loading">加载中...</div>';
+    
+    try {
+        const response = await request(`/api/files/${currentRoomId}/files`);
+        
+        if (response.code === 1) {
+            const files = response.data;
+            renderFileList(files);
+        } else {
+            fileList.innerHTML = '<div class="file-empty">加载文件列表失败</div>';
+            showToast('加载文件列表失败', 'error');
+        }
+    } catch (error) {
+        fileList.innerHTML = '<div class="file-empty">网络错误</div>';
+        showToast('网络错误', 'error');
+    }
+}
+
+// 渲染文件列表
+function renderFileList(files) {
+    const fileList = document.getElementById('fileList');
+    
+    if (files.length === 0) {
+        fileList.innerHTML = '<div class="file-empty">暂无文件</div>';
+        return;
+    }
+    
+    fileList.innerHTML = '';
+    
+    files.forEach(fileName => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        
+        fileItem.innerHTML = `
+            <div class="file-name" title="${escapeHtml(fileName)}">${escapeHtml(fileName)}</div>
+            <button class="file-download-btn" onclick="downloadFile('${escapeHtml(fileName)}')">下载</button>
+        `;
+        
+        fileList.appendChild(fileItem);
+    });
+}
+
+// 处理文件上传
+async function handleFileUpload(event) {
+    const files = event.target.files;
+    if (files.length === 0) return;
+    
+    if (!currentRoomId) {
+        showToast('请先选择房间', 'error');
+        return;
+    }
+    
+    for (let file of files) {
+        await uploadFile(file);
+    }
+    
+    // 清空文件输入
+    event.target.value = '';
+    
+    // 如果文件面板打开，刷新文件列表
+    if (isFilePanelOpen) {
+        await loadFileList();
+    }
+}
+
+// 上传文件
+async function uploadFile(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // 显示进度条
+    showUploadProgress(file.name, 0);
+    
+    const startTime = Date.now();
+    
+    try {
+        const response = await fetch(`/api/files/${currentRoomId}/upload`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('userId')}`
+            }
+        });
+        
+        // 模拟进度更新
+        await simulateProgress();
+        
+        const result = await response.json();
+        
+        // 确保至少显示1秒
+        const elapsedTime = Date.now() - startTime;
+        if (elapsedTime < 1000) {
+            await new Promise(resolve => setTimeout(resolve, 1000 - elapsedTime));
+        }
+        
+        if (result.code === 1) {
+            updateUploadProgress(100, true);
+            showToast('文件上传成功', 'success');
+            
+            // 延迟隐藏进度条
+            setTimeout(() => {
+                hideUploadProgress();
+            }, 500);
+        } else {
+            updateUploadProgress(100, false);
+            showToast(result.msg || '文件上传失败', 'error');
+            
+            // 延迟隐藏进度条
+            setTimeout(() => {
+                hideUploadProgress();
+            }, 1500);
+        }
+    } catch (error) {
+        updateUploadProgress(100, false);
+        showToast('网络错误，上传失败', 'error');
+        
+        // 延迟隐藏进度条
+        setTimeout(() => {
+            hideUploadProgress();
+        }, 1500);
+    }
+}
+
+// 显示上传进度
+function showUploadProgress(filename, progress) {
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressFilename = document.getElementById('progressFilename');
+    const progressPercentage = document.getElementById('progressPercentage');
+    const progressBarFill = document.getElementById('progressBarFill');
+    
+    progressFilename.textContent = `正在上传: ${filename}`;
+    progressPercentage.textContent = `${progress}%`;
+    progressBarFill.style.width = `${progress}%`;
+    
+    uploadProgress.className = 'upload-progress';
+    uploadProgress.style.display = 'block';
+}
+
+// 更新上传进度
+function updateUploadProgress(progress, isSuccess = null) {
+    const progressPercentage = document.getElementById('progressPercentage');
+    const progressBarFill = document.getElementById('progressBarFill');
+    const uploadProgress = document.getElementById('uploadProgress');
+    
+    progressPercentage.textContent = `${progress}%`;
+    progressBarFill.style.width = `${progress}%`;
+    
+    if (isSuccess === true) {
+        uploadProgress.className = 'upload-progress success';
+        document.getElementById('progressFilename').textContent = '上传完成';
+    } else if (isSuccess === false) {
+        uploadProgress.className = 'upload-progress error';
+        document.getElementById('progressFilename').textContent = '上传失败';
+    }
+}
+
+// 隐藏上传进度
+function hideUploadProgress() {
+    const uploadProgress = document.getElementById('uploadProgress');
+    uploadProgress.style.display = 'none';
+    
+    // 重置进度条状态
+    document.getElementById('progressPercentage').textContent = '0%';
+    document.getElementById('progressBarFill').style.width = '0%';
+    uploadProgress.className = 'upload-progress';
+}
+
+// 模拟进度更新
+async function simulateProgress() {
+    const progressSteps = [10, 25, 40, 60, 75, 85, 95];
+    
+    for (let progress of progressSteps) {
+        updateUploadProgress(progress);
+        await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 100));
+    }
+}
+
 // 退出登录
 function logout() {
     localStorage.removeItem('userId');
@@ -343,12 +573,15 @@ function logout() {
     stopRoomRefresh(); // 停止房间列表自动刷新
     currentRoomId = null;
     rooms = [];
+    isFilePanelOpen = false;
     
     // 重置聊天界面
     document.getElementById('roomsList').innerHTML = '';
     document.getElementById('chatMessages').innerHTML = '<div class="welcome-message"><p>欢迎使用IM聊天系统</p><p>请从左侧选择一个房间开始聊天</p></div>';
     document.getElementById('currentRoomName').textContent = '请选择一个房间开始聊天';
     document.getElementById('chatInput').style.display = 'none';
+    document.getElementById('fileToggleBtn').style.display = 'none';
+    closeFilePanel();
     
     showPage('loginPage');
     showToast('已退出登录', 'success');

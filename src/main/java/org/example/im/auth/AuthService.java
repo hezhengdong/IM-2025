@@ -1,6 +1,5 @@
 package org.example.im.auth;
 
-import cn.hutool.core.util.IdUtil;
 import org.example.im.chat.RoomFriendRepository;
 import org.example.im.common.entity.Room;
 import org.example.im.common.entity.RoomFriend;
