@@ -22,7 +22,8 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             m.content, 
             m.type, 
             m.createTime, 
-            CASE WHEN m.senderId = :userId THEN 'true' ELSE 'false' END
+            CASE WHEN m.senderId = :userId THEN 'true' ELSE 'false' END,
+            m.roomId
         ) 
         FROM Message m 
         JOIN User u ON u.id = m.senderId 

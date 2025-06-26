@@ -40,7 +40,7 @@ async function request(url, options = {}) {
     const userId = localStorage.getItem('userId');
     
     // 如果URL不是完整URL，则添加API前缀
-    const fullUrl = url.startsWith('http') ? url : `${CONFIG.API_BASE_URL}${url}`;
+    const fullUrl = `${CONFIG.API_BASE_URL}${url}`;
     
     const defaultOptions = {
         headers: {

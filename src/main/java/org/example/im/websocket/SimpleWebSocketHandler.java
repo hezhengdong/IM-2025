@@ -78,10 +78,12 @@ public class SimpleWebSocketHandler extends SimpleChannelInboundHandler<WebSocke
         switch (roomType) {
             case 0:
                 // 单聊消息
+                logger.info("单聊消息: {}", request);
                 boolean b1 = webSocketService.sendPrivateMessage(senderId, roomId, content, messageType);
                 break;
             case 1:
                 // 广播消息
+                logger.info("广播消息: {}", request);
                 boolean b2 = webSocketService.broadcastMessage(senderId, roomId, content, messageType);
                 break;
             default:

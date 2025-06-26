@@ -586,3 +586,50 @@ function logout() {
     showPage('loginPage');
     showToast('已退出登录', 'success');
 }
+
+// 下载文件
+async function downloadFile(fileName) {
+    if (!currentRoomId) {
+        showToast('请先选择房间', 'error');
+        return;
+    }
+    
+    try {
+        const userId = localStorage.getItem('userId');
+        const downloadUrl = `${CONFIG.API_BASE_URL}/api/files/${currentRoomId}/download/${encodeURIComponent(fileName)}`;
+        
+        // 创建一个临时的a标签来触发下载
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = fileName;
+        
+        // 如果需要身份验证，可以使用fetch方式
+        const response = await fetch(downloadUrl, {
+            headers: {
+                'Authorization': `Bearer ${userId}`,
+                'userId': userId
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            link.href = url;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // 清理URL对象
+            window.URL.revokeObjectURL(url);
+            
+            showToast('文件下载已开始', 'success');
+        } else {
+            const errorData = await response.json();
+            showToast(errorData.msg || '下载失败', 'error');
+        }
+    } catch (error) {
+        console.error('下载文件失败:', error);
+        showToast('下载失败，请重试', 'error');
+    }
+}

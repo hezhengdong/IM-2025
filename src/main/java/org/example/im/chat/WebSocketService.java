@@ -86,7 +86,7 @@ public class WebSocketService {
                 return false;
             }
             User sender = senderOpt.get();
-            MessageResponse response = new MessageResponse(sender.getImage(), sender.getUsername(), content, messageType, LocalDateTime.now().toString(), "false");
+            MessageResponse response = new MessageResponse(sender.getImage(), sender.getUsername(), content, messageType, LocalDateTime.now(), "false", roomId);
 
             // 如果目标用户在线，通过 channel 发送消息
             Channel targetChannel = getUserChannel(receiverId);
@@ -130,7 +130,7 @@ public class WebSocketService {
                 return false;
             }
             User sender = senderOpt.get();
-            MessageResponse response = new MessageResponse(sender.getImage(), sender.getUsername(), content, messageType, LocalDateTime.now().toString(), "false");
+            MessageResponse response = new MessageResponse(sender.getImage(), sender.getUsername(), content, messageType, LocalDateTime.now(), "false", roomId);
 
             // 将消息转换为JSON
             String jsonMessage = objectMapper.writeValueAsString(response);

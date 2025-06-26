@@ -192,6 +192,8 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .chat-header {
@@ -201,6 +203,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .chat-header h3 {
@@ -227,6 +230,8 @@ body {
     flex: 1;
     display: flex;
     position: relative;
+    overflow: hidden;
+    min-height: 0;
 }
 
 .chat-messages {
@@ -235,6 +240,9 @@ body {
     overflow-y: auto;
     background: #f8f9fa;
     transition: width 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .chat-messages.with-file-panel {
@@ -350,6 +358,9 @@ body {
     padding: 20px;
     background: rgba(255, 255, 255, 0.9);
     border-top: 1px solid #e1e5e9;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
 }
 
 .input-container {
@@ -447,23 +458,27 @@ body {
 
 /* 滚动条样式 */
 .rooms::-webkit-scrollbar,
-.chat-messages::-webkit-scrollbar {
+.chat-messages::-webkit-scrollbar,
+.file-list::-webkit-scrollbar {
     width: 6px;
 }
 
 .rooms::-webkit-scrollbar-track,
-.chat-messages::-webkit-scrollbar-track {
+.chat-messages::-webkit-scrollbar-track,
+.file-list::-webkit-scrollbar-track {
     background: #f1f1f1;
 }
 
 .rooms::-webkit-scrollbar-thumb,
-.chat-messages::-webkit-scrollbar-thumb {
+.chat-messages::-webkit-scrollbar-thumb,
+.file-list::-webkit-scrollbar-thumb {
     background: #c1c1c1;
     border-radius: 3px;
 }
 
 .rooms::-webkit-scrollbar-thumb:hover,
-.chat-messages::-webkit-scrollbar-thumb:hover {
+.chat-messages::-webkit-scrollbar-thumb:hover,
+.file-list::-webkit-scrollbar-thumb:hover {
     background: #a8a8a8;
 }
 
@@ -472,6 +487,11 @@ body {
     text-align: center;
     color: #999;
     padding: 40px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .welcome-message p {
@@ -483,6 +503,7 @@ body {
 .message {
     display: flex;
     margin-bottom: 15px;
+    flex-shrink: 0;
 }
 
 .message.self {
@@ -561,6 +582,11 @@ body {
     background: rgba(255, 255, 255, 0.95);
     border-top: 1px solid #e1e5e9;
     border-bottom: 1px solid #e1e5e9;
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    z-index: 10;
 }
 
 .progress-info {

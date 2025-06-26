@@ -19,6 +19,7 @@ public class MessageController {
     @GetMapping("/{roomId}/messages")
     public Result getMessages(@PathVariable Integer roomId, HttpServletRequest request) {
         Integer userId = Integer.valueOf(request.getHeader("userId"));
-        return Result.success(messageService.getMessages(roomId, userId));
+        List<MessageResponse> messages = messageService.getMessages(roomId, userId);
+        return Result.success(messages);
     }
 }

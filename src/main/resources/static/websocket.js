@@ -112,8 +112,19 @@ class WebSocketManager {
             };
             
             this.ws.send(JSON.stringify(message));
+            console.log('✅ 消息发送成功:', {
+                roomId: roomId,
+                content: content,
+                timestamp: new Date().toISOString(),
+                messageObject: message
+            });
             return true;
         } else {
+            console.error('❌ WebSocket连接状态异常:', {
+                readyState: this.ws.readyState,
+                roomId: roomId,
+                content: content
+            });
             showToast('连接断开，无法发送消息', 'error');
             return false;
         }
