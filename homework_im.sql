@@ -1,3 +1,9 @@
+-- 创建数据库
+CREATE DATABASE IF NOT EXISTS homework_im;
+
+-- 切换到该数据库
+USE homework_im;
+
 -- 用户表 (user)
 CREATE TABLE user (
                       id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY COMMENT '用户ID',
@@ -17,6 +23,10 @@ CREATE TABLE room (
                       create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
                       KEY idx_active_time (active_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='聊天房间表';
+
+-- 房间表初始数据
+INSERT INTO room (id, type, active_time, last_msg_id, create_time)
+VALUES (1, 1, NOW(), 0, NOW());
 
 -- 消息表 (message)
 CREATE TABLE message (
